@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sticky Notes – Print Rotate</title>
+  <style>
+    :root {
+      --note-size: 81.28mm; /* 3.2 inches */
+      --gap: 8mm;
+      --margin: 10mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      gap: 20px;
+      font-family: sans-serif;
+    }
+
+    .sheet {
+      width: 210mm;
+      height: 297mm;
+      padding: var(--margin);
+      display: grid;
+      grid-template-columns: repeat(2, var(--note-size));
+      grid-template-rows: repeat(3, var(--note-size));
+      gap: var(--gap);
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .note {
+      border: 1px solid #000;
+      background: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .note-content {
+      width: 100%;
+      height: 100%;
+      padding: 6px;
+      font-size: 14px;
+      line-height: 1.2;
+      overflow: hidden;
+      cursor: text;
+    }
+
+    .note-content[contenteditable="true"]:focus {
+      outline: 2px solid #007bff;
+    }
+
+    .note-content img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    @media print {
+      body {
+        background: none;
+        display: block;
+        margin: 0;
+        padding: 0;
+      }
+
+      .sheet {
+        margin: 0;
+        padding: var(--margin);
+        -webkit-print-color-adjust: exact;
+        box-shadow: none;
+        border: none;
+        width: 210mm;
+        height: 297mm;
+        overflow: hidden;
+        page-break-after: avoid;
+      }
+
+      .note {
+        border: none !important;
+      }
+
+      .sheet.show-borders .note {
+        border: 1px solid #000 !important;
+      }
+
+      .note-content {
+        transform: rotate(90deg);
+        transform-origin: center;
+        display: block !important;
+        white-space: pre-wrap;
+        overflow: hidden !important;
+      }
+
+      .note.empty-note {
+        display: none !important;
+      }
+
+      #print-btn, #toggle-borders-btn, #button-container, #style-controls, #image-buttons, #bg-color-controls {
+        display: none !important;
+      }
+    }
+
+    #button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-self: flex-start;
+      position: sticky;
+      top: 20px;
+    }
+
+    #style-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+      width: 200px;
+      font-size: 14px;
+    }
+
+    #bg-color-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+      width: 200px;
+    }
+
+    #image-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+      width: 200px;
+    }
+
+    .image-btn-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .image-btn-row button {
+      flex: 1;
+    }
+
+    .bg-color-btn-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .bg-color-btn-row button {
+      flex: 1;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    input[type="color"] {
+      width: 100%;
+      height: 32px;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      background: none;
+    }
+
+    button {
+      padding: 12px 20px;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: background-color 0.3s ease;
+      height: fit-content;
+    }
+
+    button:hover {
+      filter: brightness(0.9);
+    }
+
+    #print-btn, #toggle-borders-btn {
+      background-color: #007bff;
+    }
+
+    #print-btn:hover, #toggle-borders-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .image-btn {
+      background-color: #28a745;
+    }
+
+    .image-btn:hover {
+      background-color: #218838;
+    }
+
+    .bg-color-btn {
+      background-color: #6c757d;
+    }
+
+    .bg-color-btn:hover {
+      background-color: #5a6268;
+    }
+
+    .sdr-color-btn {
+      background-color: #1b9d49;
+    }
+
+    .sdr-color-btn:hover {
+      background-color: #15803d;
+    }
+
+    .alwaha-color-btn {
+      background-color: #04293e;
+    }
+
+    .alwaha-color-btn:hover {
+      background-color: #031a29;
+    }
+
+    .valley-color-btn {
+      background-color: #9d8557;
+    }
+
+    .valley-color-btn:hover {
+      background-color: #857145;
+    }
+
+    .sky-color-btn {
+      background-color: #3192c9;
+    }
+
+    .sky-color-btn:hover {
+      background-color: #2a7fab;
+    }
+
+    .mangrove-color-btn {
+      background-color: #e53a83;
+    }
+
+    .mangrove-color-btn:hover {
+      background-color: #c5306e;
+    }
+  </style>
+</head>
+<body>
+  <div class="sheet" id="sheet">
+    <div class="note"><div class="note-content" contenteditable="true" style="text-align: center;">Sticky Note 1</div></div>
+    <div class="note"><div class="note-content" contenteditable="true" style="text-align: center;">Sticky Note 2</div></div>
+    <div class="note"><div class="note-content" contenteditable="true" style="text-align: center;">Sticky Note 3</div></div>
+    <div class="note"><div class="note-content" contenteditable="true" style="text-align: center;">Sticky Note 4</div></div>
+    <div class="note"><div class="note-content" contenteditable="true" style="text-align: center;">Sticky Note 5</div></div>
+    <div class="note"><div class="note-content" contenteditable="true" style="text-align: center;">Sticky Note 6</div></div>
+  </div>
+
+  <div id="button-container">
+    <button id="print-btn" title="Print Sticky Notes">Print</button>
+    <button id="toggle-borders-btn" title="Toggle Borders On/Off for Print">Borders: OFF</button>
+
+    <div id="style-controls">
+      <label for="font-size-control">Font Size: <span id="font-size-value">14</span>px</label>
+      <input type="range" id="font-size-control" min="8" max="200" value="14" step="1" />
+
+      <label for="color-picker-control">Text Color:</label>
+      <input type="color" id="color-picker-control" value="#000000" />
+
+      <label for="letter-spacing-control">Letter Spacing: <span id="letter-spacing-value">0</span>px</label>
+      <input type="range" id="letter-spacing-control" min="0" max="10" value="0" step="0.5" />
+      
+      <label for="line-height-control">Line Height: <span id="line-height-value">1.2</span></label>
+      <input type="range" id="line-height-control" min="0.8" max="3" value="1.2" step="0.1" />
+    </div>
+
+    <div id="bg-color-controls">
+      <label for="bg-color-picker-control">Note Background Color:</label>
+      <input type="color" id="bg-color-picker-control" value="#ffffff" />
+      
+      <div class="bg-color-btn-row">
+        <button class="bg-color-btn" id="apply-bg-color-btn">Apply to Current</button>
+        <button class="bg-color-btn" id="apply-bg-color-all-btn">Apply to All</button>
+      </div>
+      
+      <div class="bg-color-btn-row">
+        <button class="sdr-color-btn" id="sdr-color-btn">SDR</button>
+        <button class="alwaha-color-btn" id="alwaha-color-btn">AL WAHA</button>
+      </div>
+      
+      <div class="bg-color-btn-row">
+        <button class="valley-color-btn" id="valley-color-btn">Valley</button>
+        <button class="sky-color-btn" id="sky-color-btn">Sky</button>
+      </div>
+      
+      <div class="bg-color-btn-row">
+        <button class="mangrove-color-btn" id="mangrove-color-btn">Mangrove</button>
+        <button class="bg-color-btn" id="reset-bg-color-btn">Reset</button>
+      </div>
+    </div>
+
+    <div id="image-buttons">
+      <div class="image-btn-row">
+        <button class="image-btn" id="mangrove-btn" title="Add Mangrove image">Mangrove</button>
+        <button class="image-btn" id="valley-btn" title="Add Valley image">Valley</button>
+      </div>
+      <div class="image-btn-row">
+        <button class="image-btn" id="sky-btn" title="Add Sky image">Sky</button>
+        <button class="image-btn" id="sdr-btn" title="Add SDR image">SDR</button>
+      </div>
+      <button class="image-btn" id="al-waha-btn" title="Add AL WAHA image">AL WAHA</button>
+    </div>
+  </div>
+
+  <script>
+    const defaultNotes = [
+      "Sticky Note 1",
+      "Sticky Note 2",
+      "Sticky Note 3",
+      "Sticky Note 4",
+      "Sticky Note 5",
+      "Sticky Note 6"
+    ];
+
+    const noteElements = document.querySelectorAll('.note');
+
+    function checkAndMarkEmptyNotes() {
+      noteElements.forEach((note, index) => {
+        const content = note.querySelector('.note-content').innerText.trim();
+        if (content === defaultNotes[index]) {
+          note.classList.add('empty-note');
+        } else {
+          note.classList.remove('empty-note');
+        }
+      });
+    }
+
+    // Trigger this check right before printing
+    document.getElementById('print-btn').addEventListener('click', () => {
+      checkAndMarkEmptyNotes();
+      window.print();
+    });
+
+    // Allow paste of images
+    document.querySelectorAll('.note-content').forEach(note => {
+      note.addEventListener('paste', function (event) {
+        const items = event.clipboardData.items;
+        for (const item of items) {
+          if (item.type.indexOf("image") !== -1) {
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+              const img = document.createElement("img");
+              img.src = evt.target.result;
+              img.style.maxWidth = '100%';
+              img.style.display = 'block';
+              img.style.margin = '0 auto';
+              note.appendChild(img);
+            };
+            reader.readAsDataURL(blob);
+          }
+        }
+      });
+    });
+
+    const sheet = document.getElementById('sheet');
+    const toggleBtn = document.getElementById('toggle-borders-btn');
+    toggleBtn.addEventListener('click', () => {
+      sheet.classList.toggle('show-borders');
+      toggleBtn.textContent = sheet.classList.contains('show-borders') ? 'Borders: ON' : 'Borders: OFF';
+    });
+
+    const fontSizeControl = document.getElementById('font-size-control');
+    const colorPickerControl = document.getElementById('color-picker-control');
+    const letterSpacingControl = document.getElementById('letter-spacing-control');
+    const lineHeightControl = document.getElementById('line-height-control');
+
+    const fontSizeValue = document.getElementById('font-size-value');
+    const letterSpacingValue = document.getElementById('letter-spacing-value');
+    const lineHeightValue = document.getElementById('line-height-value');
+
+    // Background color controls
+    const bgColorPicker = document.getElementById('bg-color-picker-control');
+    const applyBgColorBtn = document.getElementById('apply-bg-color-btn');
+    const applyBgColorAllBtn = document.getElementById('apply-bg-color-all-btn');
+    const resetBgColorBtn = document.getElementById('reset-bg-color-btn');
+    const sdrColorBtn = document.getElementById('sdr-color-btn');
+    const alwahaColorBtn = document.getElementById('alwaha-color-btn');
+    const valleyColorBtn = document.getElementById('valley-color-btn');
+    const skyColorBtn = document.getElementById('sky-color-btn');
+    const mangroveColorBtn = document.getElementById('mangrove-color-btn');
+
+    function applyStyleToSelection(styleProp, value) {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+      const range = selection.getRangeAt(0);
+      if (range.collapsed) return;
+
+      const span = document.createElement('span');
+      if (styleProp === 'fontSize') span.style.fontSize = value + 'px';
+      if (styleProp === 'color') span.style.color = value;
+      if (styleProp === 'letterSpacing') span.style.letterSpacing = value + 'px';
+      if (styleProp === 'lineHeight') span.style.lineHeight = value;
+
+      const extracted = range.extractContents();
+      span.appendChild(extracted);
+      range.insertNode(span);
+      selection.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      selection.addRange(newRange);
+    }
+
+    function applyLineHeightToNote(note, lineHeight) {
+      note.style.lineHeight = lineHeight;
+    }
+
+    fontSizeControl.addEventListener('input', () => {
+      const size = fontSizeControl.value;
+      fontSizeValue.textContent = size;
+      applyStyleToSelection('fontSize', size);
+    });
+
+    colorPickerControl.addEventListener('input', () => {
+      applyStyleToSelection('color', colorPickerControl.value);
+    });
+
+    letterSpacingControl.addEventListener('input', () => {
+      const spacing = letterSpacingControl.value;
+      letterSpacingValue.textContent = spacing;
+      applyStyleToSelection('letterSpacing', spacing);
+    });
+
+    lineHeightControl.addEventListener('input', () => {
+      const lineHeight = lineHeightControl.value;
+      lineHeightValue.textContent = lineHeight;
+      
+      // Apply to selection if there is one
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) {
+        applyStyleToSelection('lineHeight', lineHeight);
+      }
+      // Otherwise apply to last focused note
+      else if (lastFocusedNote) {
+        applyLineHeightToNote(lastFocusedNote, lineHeight);
+      }
+    });
+
+    function getFontSizeAtSelection() {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return null;
+      const range = selection.getRangeAt(0);
+      let node = range.startContainer;
+      if (node.nodeType === Node.TEXT_NODE) {
+        node = node.parentNode;
+      }
+      if (!node.closest || !node.closest('.note-content')) return null;
+      const style = window.getComputedStyle(node);
+      return style.fontSize;
+    }
+
+    document.addEventListener('selectionchange', () => {
+      const fontSize = getFontSizeAtSelection();
+      if (fontSize) {
+        const sizeNum = parseInt(fontSize, 10);
+        if (fontSizeControl.value != sizeNum) {
+          fontSizeControl.value = sizeNum;
+          fontSizeValue.textContent = sizeNum;
+        }
+      }
+    });
+
+    // Track the last focused note
+    let lastFocusedNote = null;
+
+    // Update lastFocusedNote when a note is clicked
+    document.querySelectorAll('.note-content').forEach(note => {
+      note.addEventListener('focus', () => {
+        lastFocusedNote = note;
+      });
+    });
+
+    // Background color functions
+    function applyBackgroundColor(color) {
+      if (!lastFocusedNote) {
+        alert('Please click inside a sticky note first to select it.');
+        return;
+      }
+      lastFocusedNote.parentElement.style.backgroundColor = color;
+    }
+
+    function applyBackgroundColorToAll(color) {
+      document.querySelectorAll('.note').forEach(note => {
+        note.style.backgroundColor = color;
+      });
+    }
+
+    applyBgColorBtn.addEventListener('click', () => {
+      applyBackgroundColor(bgColorPicker.value);
+    });
+
+    applyBgColorAllBtn.addEventListener('click', () => {
+      applyBackgroundColorToAll(bgColorPicker.value);
+    });
+
+    resetBgColorBtn.addEventListener('click', () => {
+      if (lastFocusedNote) {
+        lastFocusedNote.parentElement.style.backgroundColor = '';
+      }
+      document.querySelectorAll('.note').forEach(note => {
+        note.style.backgroundColor = '';
+      });
+    });
+
+    // Project-specific color buttons
+    sdrColorBtn.addEventListener('click', () => {
+      applyBackgroundColor('#1b9d49');
+    });
+
+    alwahaColorBtn.addEventListener('click', () => {
+      applyBackgroundColor('#04293e');
+    });
+
+    valleyColorBtn.addEventListener('click', () => {
+      applyBackgroundColor('#9d8557');
+    });
+
+    skyColorBtn.addEventListener('click', () => {
+      applyBackgroundColor('#3192c9');
+    });
+
+    mangroveColorBtn.addEventListener('click', () => {
+      applyBackgroundColor('#e53a83');
+    });
+
+    // Function to insert image into the last focused note
+    function insertImage(imageFilename) {
+      if (!lastFocusedNote) {
+        alert('Please click inside a sticky note first to select it.');
+        return;
+      }
+
+      const img = document.createElement('img');
+      img.src = imageFilename;
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.margin = '0 auto';
+
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0 && lastFocusedNote.contains(selection.anchorNode)) {
+        // Insert at cursor position
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          range.deleteContents();
+        }
+        range.insertNode(img);
+        
+        // Move cursor after the image
+        const newRange = document.createRange();
+        newRange.setStartAfter(img);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      } else {
+        // Append to the end if no specific position is selected
+        lastFocusedNote.appendChild(img);
+      }
+
+      // Focus back on the note
+      lastFocusedNote.focus();
+    }
+
+    // AL WAHA button
+    document.getElementById('al-waha-btn').addEventListener('click', () => {
+      insertImage('AL-WAHA-logo-pic.png');
+    });
+
+    // SDR button
+    document.getElementById('sdr-btn').addEventListener('click', () => {
+      insertImage('SDR-logo-pic.png');
+    });
+
+    // Mangrove button
+    document.getElementById('mangrove-btn').addEventListener('click', () => {
+      insertImage('Mangrove-Logo-Pic.png');
+    });
+
+    // Sky button
+    document.getElementById('sky-btn').addEventListener('click', () => {
+      insertImage('sky-logo-pic.png');
+    });
+
+    // Valley button
+    document.getElementById('valley-btn').addEventListener('click', () => {
+      insertImage('Valley-logo-pic.png');
+    });
+  </script>
+</body>
+</html>
